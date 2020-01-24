@@ -25,10 +25,14 @@ pipeline {
                 junit '**/target/surefire-reports/TEST-*.xml'
             }
         }
-        stage ('Package') {
+        stage ('Code coverage') {
             steps {
-                sh 'echo "--=-- Package Stage --=--"'
-                sh 'mvn package'
+                jacoco (
+                    execPattern: 'target/*.exec',
+                    classPattern: 'target/classes',
+                    sourcePattern: 'src/main/java',
+                    exclusionPattern: 'src/test*'
+                )
             }
         }
     }
