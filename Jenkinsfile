@@ -6,6 +6,26 @@ pipeline {
     }
     
     stages {
+        stage ('Cleaning workspace'){
+            steps {
+                sh 'echo "--=-- Cleaning stage --=--"'
+                sh 'mvn clean'
+                script {
+                    try {
+                        sh 'docker stop simple-boot  && docker rm simple-boot'
+                    } catch (Exception e) {
+                        sh 'echo "--=-- No container to remove --=--"'
+                    }
+                }
+                script {
+                    try {
+                        sh 'docker rmi simple-boot'
+                    } catch (Exception e) {
+                        sh 'echo "--=-- No image to remove --=--"'
+                    }
+                }
+            }
+        }
         stage ('Checkout') {
             steps {
                 sh 'echo "--=-- Checkout stage --=--"'
@@ -15,7 +35,7 @@ pipeline {
         stage ('Compile') {
             steps {
                 sh 'echo "--=-- Compile Stage --=--"'
-                sh 'mvn clean compile'
+                sh 'mvn compile'
             }
         }
         stage ('Test') {
@@ -47,5 +67,24 @@ pipeline {
                 }
             }
         }
+        stage ('Package') {
+            steps {
+                sh 'echo "--=-- Package Stage --=--"'
+                sh 'mvn package'
+            }
+        }
+        stage ('Docker Build') {
+            steps {
+                sh 'echo "--=-- Build Docker Image --=--"'
+                sh 'docker build -t simple-boot .'
+            }            
+        }
+        stage ('Deploy Application') {
+            steps {
+                sh 'echo "--=-- Deploying Docker Image --=--"'
+                sh 'docker run -d --name=simple-boot -p 8180:8080 simple-boot'
+            }
+        }
+        
     }
 }
