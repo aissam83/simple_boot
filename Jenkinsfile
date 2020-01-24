@@ -35,5 +35,17 @@ pipeline {
                 )
             }
         }
+        stage ('Sanity check') {
+            steps {
+                sh 'echo "--=-- Sanity check test projet --=--"'
+                sh 'mvn checkstyle:checkstyle pmd:pmd'
+            }
+            post {
+                always {
+                    recordIssues enabledForFailure: true, tools: [checkStyle()]
+                    recordIssues enabledForFailure: true, tool: pmdParser(pattern: '**/target/pmd.xml')
+                }
+            }
+        }
     }
 }
